@@ -22,13 +22,14 @@
       <strong>Tipp</strong> It's easier, if you have all your Project media in a own folder. Because then you have only one Rule to set.
     </div>
     <div id="step1">
-    <div id="dropzone" style="background:grey;border: 6px solid;border-radius:10px;width:300px;height:200px;text-align:center;display: block;margin-left: auto;margin-right: auto">
-      <h2>
+      <div id="dropzone" style="background:grey;border: 6px solid;border-radius:10px;width:300px;height:200px;text-align:center;display: block;margin-left: auto;margin-right: auto">
+        <h2>
         Drop your wlmp - File <br><h1>
         HERE
         </h1>
         </h2>
-    </div></div>
+      </div>
+    </div>
     <br>
     <div id="step2" style="display:none">
       <div class="panel panel-success">
@@ -54,7 +55,7 @@
       <div class="row">
         <div class="col-xs-12 col-sm-4">
           <div class="panel panel-default">
-            <div class="panel-heading">Original</div>
+            <div class="panel-heading">Original (dblclick)</div>
             <ul class="list-group" id="from">
             </ul>
           </div>
@@ -75,6 +76,8 @@
         </div>
       </div>
     </div>
+    <br>
+    <a class="btn btn-success" id="save" style="display:none">Save Result</a>
   </div>
 </body>
 <script>
@@ -86,7 +89,12 @@
   var ruledellquestion = "Are you sure to delete this rule?";
   var ruleSeperator = "---d-ds--df-fsd-";
   var pathcount = 0;
+  var name = "";
 
+  function suggestRule(content){
+    fromf.value=decodeURI(content).replace('"','');
+  }
+  
   function addRule(from, to) {
     if (from != null && from != "" && to != null && to != "") {
       if (rules.length == undefined) {
@@ -94,8 +102,13 @@
       } else {
         id = rules.length;
       }
+      if(encodeURI(from).search("%5C")!=-1&&encodeURI(from).search("%5C")!=-1) {
       rules[id] = from + ruleSeperator + to;
-      runRules();
+      runRules();  
+      } else {
+      alert("You must have min one \\ in your Rule!");
+    }
+      
     } else {
       alert("You can't add incomplete Rules!");
     }
@@ -118,7 +131,7 @@
     for (i = 0; i < rules.length; i++) {
       document.getElementById('rules').innerHTML += "<li class='list-group-item'><a href='#middle' onclick='rmR(" + i + ");'>" + rules[i].replace(ruleSeperator, " <span class='glyphicon glyphicon-chevron-right' aria-hidden='true'></span> ") + "</a></li>";
       var ruleParts = rules[i].split(ruleSeperator);
-      for (j = 0; j < pathcount; j++) {
+      for (j = 0; j <= pathcount*3; j++) {
         resultAsText = resultAsText.replace(ruleParts[0], ruleParts[1]);
       }
 
@@ -131,11 +144,14 @@
     searchPaths(resultAsText).forEach(function(entry) {
       document.getElementById('to').innerHTML += "<li class='list-group-item'>" + entry + "</li>";
     });
-
+    if(rules.length > 0){$('#save').fadeIn(300);}else{$('#save').fadeOut(100);}
+    createDownloadLink("#save", resultAsText, name);
   }
 
   function searchPaths(string) {
-    return string.match(pathscan);
+    var paths=string.match(pathscan);
+    pathcount=paths.length;
+    return paths;
   }
 
   function searchPathsFromFile(f) {
@@ -145,8 +161,7 @@
       fileAsText = reader.result;
       document.getElementById('from').innerHTML = "";
       searchPaths(fileAsText).forEach(function(entry) {
-        document.getElementById('from').innerHTML += "<li class='list-group-item'>" + entry + "</li>";
-        pathcount++;
+        document.getElementById('from').innerHTML += "<li class='list-group-item' ondblclick='suggestRule(\"" +encodeURI(entry)+ "\");'>" + entry + "</li>";
       });
       runRules();
     }
@@ -172,11 +187,11 @@
         continue;
       }
       one = true;
+      name = f.name;
       document.getElementById('dropzone').innerHTML = '<h3><strong>' + f.name + '</strong><h3><br><h4>' +
         f.size + ' bytes, last modified: ' +
         f.lastModifiedDate.toLocaleDateString() + '</h4>';
       $('#step2').fadeIn(1000);
-      scrollToAnchor('middle');
       workOnFile = f;
       searchPathsFromFile(f);
 
@@ -193,13 +208,30 @@
   var dropZone = document.getElementById('dropzone');
   dropZone.addEventListener('dragover', handleDragOver, false);
   dropZone.addEventListener('drop', handleFileSelect, false);
-  function scrollToAnchor(aid){
-    var aTag = $("a[name='"+ aid +"']");
-    $('html,body').animate({scrollTop: aTag.offset().top},'slow');
-}
-  $( document ).ready(function() {
-  $('#step1').fadeIn(100);   
-});
+
+  function scrollToAnchor(aid) {
+    var aTag = $("a[name='" + aid + "']");
+    $('html,body').animate({
+      scrollTop: aTag.offset().top
+    }, 'slow');
+  }
+  $(document).ready(function() {
+    $('#step1').fadeIn(100);
+  });
+
+  function createDownloadLink(anchorSelector, str, fileName) {
+    if (window.navigator.msSaveOrOpenBlob) {
+      var fileData = [str];
+      blobObject = new Blob(fileData);
+      $(anchorSelector).click(function() {
+        window.navigator.msSaveOrOpenBlob(blobObject, fileName);
+      });
+    } else {
+      var url = "data:application/wlmoviemaker;charset=utf-8," + encodeURIComponent(str);
+      $(anchorSelector).attr("download", fileName);
+      $(anchorSelector).attr("href", url);
+    }
+  }
 </script>
 
 </html>
