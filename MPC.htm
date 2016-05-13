@@ -1,0 +1,237 @@
+<html>
+
+<head>
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-2.2.3.min.js" integrity="sha256-a23g1Nt4dtEYOj7bR+vTu7+T8VP13humZFBJNIYoEJo=" crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+  <title>MoviemakerPathConverter</title>
+</head>
+
+<body>
+  <h1>
+     MoviemakerPathConverter<small>by github.com/Simon-Laux</small>
+    </h1>
+  <hr>
+  <div class="container">
+    <div class="alert alert-info alert-dismissible" role="alert">
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <strong>Tipp</strong> It's easier, if you have all your Project media in a own folder. Because then you have only one Rule to set.
+    </div>
+    <div id="step1">
+      <div id="dropzone" style="background:grey;border: 6px solid;border-radius:10px;width:300px;height:200px;text-align:center;display: block;margin-left: auto;margin-right: auto">
+        <h2>
+        Drop your wlmp - File <br><h1>
+        HERE
+        </h1>
+        </h2>
+      </div>
+    </div>
+    <br>
+    <div id="step2" style="display:none">
+      <div class="panel panel-success">
+        <div class="panel-heading">Add new Rule</div>
+        <div class="panel-body">
+          <form class="form-inline">
+            <div class="form-group">
+              <label class="sr-only" for="exampleInputEmail3">From</label>
+              <input type="text" class="form-control" id="fromf" placeholder="Replace this">
+            </div>
+            <div class="form-group">
+              <label class="sr-only" for="exampleInputPassword3">To</label>
+              <input type="text" class="form-control" id="tof" placeholder="With that">
+            </div>
+            <button type="button" class="btn btn-default" onclick="addRule(document.getElementById('fromf').value,document.getElementById('tof').value);">
+            add rule  
+            </button>
+          </form>
+        </div>
+      </div>
+      </ul>
+      <a anchor="middle" name="middle"></a>
+      <div class="row">
+        <div class="col-xs-12 col-sm-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Original (dblclick)</div>
+            <ul class="list-group" id="from">
+            </ul>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Rules</div>
+            <ul class="list-group" id="rules">
+            </ul>
+          </div>
+        </div>
+        <div class="col-xs-12 col-sm-4">
+          <div class="panel panel-default">
+            <div class="panel-heading">Result</div>
+            <ul class="list-group" id="to">
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br>
+    <a class="btn btn-success" id="save" style="display:none">Save Result</a><br>
+  </div>
+</body>
+<script>
+  var pathscan = new RegExp(atob("KCIoKFthLXpBLVpdOil8KFxcXFxbXi9cXDpcKlw/IiI8Plx8XSsoXFxbYS16QS1aXVwkKT8pKVxcKFteL1xcOlwqXD8iIjw+XHxdK1xcKSpbXi9cXDpcKlw/IiI8Plx8XSsoXC5bXi9cXDpcKlw/IiI8Plx8XStbXi9cXDpcKlw/IiI8Plx8XHNdKT8iKXwoKChbYS16QS1aXTopfChcXFxcW14vXFw6XCpcPyIiPD5cfFxzXSsoXFxbYS16QS1aXVwkKT8pKVxcKFteL1xcOlwqXD8iIjw+XHxcc10rXFwpKlteL1xcOlwqXD8iIjw+XHxcc10rKFwuW2EtekEtWjAtOV0rKT8p"), "img");
+  var workOnFile;
+  var fileAsText = "";
+  var resultAsText = "";
+  var rules = [];
+  var ruledellquestion = "Are you sure to delete this rule?";
+  var ruleSeperator = "---d-ds--df-fsd-";
+  var pathcount = 0;
+  var name = "";
+
+  function suggestRule(content){
+    fromf.value=decodeURI(content).replace('"','');
+  }
+  
+  function addRule(from, to) {
+    if (from != null && from != "" && to != null && to != "") {
+      if (rules.length == undefined) {
+        id = 0;
+      } else {
+        id = rules.length;
+      }
+      if(encodeURI(from).search("%5C")!=-1&&encodeURI(from).search("%5C")!=-1) {
+      rules[id] = from + ruleSeperator + to;
+      runRules();  
+      } else {
+      alert("You must have min one \\ in your Rule!");
+    }
+      
+    } else {
+      alert("You can't add incomplete Rules!");
+    }
+  }
+
+  function rmR(id) {
+    if (confirm(ruledellquestion)) {
+      rmRule(id);
+    }
+  }
+
+  function rmRule(id) {
+    rules.splice(id, 1);
+    runRules();
+  }
+
+  function runRules() {
+    resultAsText = fileAsText;
+    document.getElementById('rules').innerHTML = "";
+    for (i = 0; i < rules.length; i++) {
+      document.getElementById('rules').innerHTML += "<li class='list-group-item'><a href='#middle' onclick='rmR(" + i + ");'>" + rules[i].replace(ruleSeperator, " <span class='glyphicon glyphicon-chevron-right' aria-hidden='true'></span> ") + "</a></li>";
+      var ruleParts = rules[i].split(ruleSeperator);
+      for (j = 0; j <= pathcount*3; j++) {
+        resultAsText = resultAsText.replace(ruleParts[0], ruleParts[1]);
+      }
+
+    }
+    showResultPaths();
+  }
+
+  function showResultPaths() {
+    document.getElementById('to').innerHTML = "";
+    searchPaths(resultAsText).forEach(function(entry) {
+      document.getElementById('to').innerHTML += "<li class='list-group-item'>" + entry + "</li>";
+    });
+    if(rules.length > 0){$('#save').fadeIn(300);}else{$('#save').fadeOut(100);}
+    createDownloadLink("#save", resultAsText, name);
+  }
+
+  function searchPaths(string) {
+    var paths=string.match(pathscan);
+    pathcount=paths.length;
+    return paths;
+  }
+
+  function searchPathsFromFile(f) {
+    var reader = new FileReader();
+    reader.readAsText(f, "UTF-8");
+    reader.onload = function(e) {
+      fileAsText = reader.result;
+      document.getElementById('from').innerHTML = "";
+      searchPaths(fileAsText).forEach(function(entry) {
+        document.getElementById('from').innerHTML += "<li class='list-group-item' ondblclick='suggestRule(\"" +encodeURI(entry)+ "\");'>" + entry + "</li>";
+      });
+      runRules();
+    }
+
+  }
+
+  function handleFileSelect(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    var files = evt.dataTransfer.files; // FileList object.
+
+    // files is a FileList of File objects. List some properties.
+    var one = false;
+    var output = [];
+    for (var i = 0, f; f = files[i]; i++) {
+      var string = escape(f.name),
+        substring = "wlmp";
+      if (!(string.indexOf(substring) > -1)) {
+        continue;
+      }
+      if (one) {
+        continue;
+      }
+      one = true;
+      name = f.name;
+      document.getElementById('dropzone').innerHTML = '<h3><strong>' + f.name + '</strong><h3><br><h4>' +
+        f.size + ' bytes, last modified: ' +
+        f.lastModifiedDate.toLocaleDateString() + '</h4>';
+      $('#step2').fadeIn(1000);
+      workOnFile = f;
+      searchPathsFromFile(f);
+
+    }
+  }
+
+  function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+  }
+
+  // Setup the dnd listeners.
+  var dropZone = document.getElementById('dropzone');
+  dropZone.addEventListener('dragover', handleDragOver, false);
+  dropZone.addEventListener('drop', handleFileSelect, false);
+
+  function scrollToAnchor(aid) {
+    var aTag = $("a[name='" + aid + "']");
+    $('html,body').animate({
+      scrollTop: aTag.offset().top
+    }, 'slow');
+  }
+  $(document).ready(function() {
+    $('#step1').fadeIn(100);
+  });
+
+  function createDownloadLink(anchorSelector, str, fileName) {
+    if (window.navigator.msSaveOrOpenBlob) {
+      var fileData = [str];
+      blobObject = new Blob(fileData);
+      $(anchorSelector).click(function() {
+        window.navigator.msSaveOrOpenBlob(blobObject, fileName);
+      });
+    } else {
+      var url = "data:application/wlmoviemaker;charset=utf-8," + encodeURIComponent(str);
+      $(anchorSelector).attr("download", fileName);
+      $(anchorSelector).attr("href", url);
+    }
+  }
+</script>
+
+</html>
